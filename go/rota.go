@@ -90,9 +90,8 @@ func main() {
                 log.Fatalf("Unable to retrieve Sheets client: %v", err)
         }
 
-        // https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
-        spreadsheetId := "1vR6LybFPvSip663GMKe1Get68Fcg6oT5pGpVrOC9JQw";
-        readRange := "Sheet1!A2:" + col + "23";
+        spreadsheetId := "1BujRtoQOcKENN6HlXgywMdpnEnWgVf7zZWUAYlAMI3Y";
+        readRange := "Sheet1!A2:" + col + "22";
         resp, err := srv.Spreadsheets.Values.Get(spreadsheetId, readRange).Do()
         if err != nil {
                 log.Fatalf("Unable to retrieve data from sheet: %v", err)
@@ -110,6 +109,6 @@ func main() {
 			}
                 }
                 fmt.Println("</ul>")
-                fmt.Println("<p>Thanks as always for your service to our congregation.<p>The master list is: <a href='https://docs.google.com/spreadsheets/d/1vR6LybFPvSip663GMKe1Get68Fcg6oT5pGpVrOC9JQw/edit#gid=0'>here.</a><p>All the best, Tim</body></html>")
+                fmt.Printf("<p>Thanks as always for your service to our congregation.<p>The master list is: <a href='https://docs.google.com/spreadsheets/d/%s/'>here.</a><p>All the best, Tim</body></html>", spreadsheetId)
         }
 }
