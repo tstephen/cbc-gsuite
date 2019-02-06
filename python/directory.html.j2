@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<!--
+  Copyright 2011-2018 Tim Stephenson and contributors
+
+   Licensed under the Apache License, Version 2.0 (the "License"); you may not
+   use this file except in compliance with the License.  You may obtain a copy
+   of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+   WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+   License for the specific language governing permissions and limitations under
+   the License.
+
+   Jinja2 template to render contacts into family group directory.
+-->
+<html lang="en">
+<head>
+  <title>CBC Directory</title>
+  <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
+  <style>
+  </style>
+</head>
+<body>
+  <table id="directoryTable" class="directory table table-striped">
+    <thead>
+    </thead>
+    <tbody>
+      {%- for c in contacts %}
+        {% set ns = namespace(spouse=None) %}
+        {%- if c.customFields.spouse %}
+          {% for s in contacts -%}
+	    {% if s.fullName == c.customFields.spouse %}
+              {% set ns.spouse = s %}
+            {% endif %}
+	  {%- endfor %}
+	{% endif -%}
+        <tr {% if c.stage!=undefined %}class="{{c.stage}}"{% endif %} data-href="{{c.selfRef}}">
+          <th>
+            {{c.lastName}}, {{c.firstName}}
+            {%- if ns.spouse %} and {{ns.spouse.firstName}}{% endif -%}
+            ({{c.stage}})
+          </th>
+        </tr>
+        <tr><td>
+          {% if c.address %}{{c.address}}<br/>{% endif %}
+          {%- if c.phone1 %}{{c.phone1}}
+	    {% if c.phone1[1] == '7' %}({{c.firstName}}){% endif %}
+            <br/>
+          {% endif -%}
+          {%- if c.phone2 %}{{c.phone2}}
+	    {% if c.phone2[1] == '7' %}({{c.firstName}}){% endif %}
+            <br/>
+          {% endif -%}
+          {% if c.email and c.email != 'null' %}{{c.email}}<br/>{% endif %}
+          {%- if ns.spouse %}
+            {%- if ns.spouse.phone1 and c.phone1!=ns.spouse.phone1 %}
+	      {{ ns.spouse.phone1 }}
+	      {% if ns.spouse.phone1[1] == '7' %}({{ns.spouse.firstName}}){% endif %}
+              <br/>
+            {% endif -%}
+            {%- if ns.spouse.phone2 and c.phone2!=ns.spouse.phone2 %}
+	      {{ ns.spouse.phone2 }}
+	      {% if ns.spouse.phone2[1] == '7' %}({{ns.spouse.firstName}}){% endif %}
+              <br/>
+            {% endif -%}
+            {%- if ns.spouse.email and c.email!=ns.spouse.email %}
+              {{ns.spouse.email}}<br/>
+            {% endif -%}
+          {% endif -%}
+	  {%- if c.customFields.childrenNames %}Children: {{ c.customFields.childrenNames }}{% endif -%}
+        </td></tr>
+      {% endfor -%}
+    </tbody>
+    <tfoot>
+    </tfoot>
+  </table>
+</body>
+</html>

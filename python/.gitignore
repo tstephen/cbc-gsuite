@@ -1,0 +1,6 @@
+*.bak
+*.html
+*.pdf
+client_secret.json
+credentials.json
+token.json
