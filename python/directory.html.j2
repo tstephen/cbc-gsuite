@@ -28,7 +28,7 @@
     <thead>
     </thead>
     <tbody>
-      {%- for c in contacts %}
+      {%- for c in contacts|sort(attribute='lastName') %}
         {% set ns = namespace(spouse=None) %}
         {%- if c.customFields.spouse %}
           {% for s in contacts -%}
@@ -37,21 +37,22 @@
             {% endif %}
 	  {%- endfor %}
 	{% endif -%}
+	{% if loop.first==True or loop.previtem.lastName != c.lastName %}
         <tr {% if c.stage!=undefined %}class="{{c.stage}}"{% endif %} data-href="{{c.selfRef}}">
           <th>
             {{c.lastName}}, {{c.firstName}}
             {%- if ns.spouse %} and {{ns.spouse.firstName}}{% endif -%}
-            ({{c.stage}})
+	    <span> ({{c.stage}})</span>
           </th>
         </tr>
         <tr><td>
           {% if c.address %}{{c.address}}<br/>{% endif %}
           {%- if c.phone1 %}{{c.phone1}}
-	    {% if c.phone1[1] == '7' %}({{c.firstName}}){% endif %}
+	    {% if ns.spouse and c.phone1[1] == '7' %}({{c.firstName}}){% endif %}
             <br/>
           {% endif -%}
           {%- if c.phone2 %}{{c.phone2}}
-	    {% if c.phone2[1] == '7' %}({{c.firstName}}){% endif %}
+	    {% if ns.spouse and c.phone2[1] == '7' %}({{c.firstName}}){% endif %}
             <br/>
           {% endif -%}
           {% if c.email and c.email != 'null' %}{{c.email}}<br/>{% endif %}
@@ -72,6 +73,7 @@
           {% endif -%}
 	  {%- if c.customFields.childrenNames %}Children: {{ c.customFields.childrenNames }}{% endif -%}
         </td></tr>
+	{% endif %}
       {% endfor -%}
     </tbody>
     <tfoot>
