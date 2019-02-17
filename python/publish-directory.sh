@@ -17,14 +17,19 @@
 #
 ###############################################################################
 
+export DIR=$(dirname $0)
+cd $DIR
+
 # kp is python client to knowprocess.com
 kp https://api.knowprocess.com/cbc/contacts/?returnFull=true > cbc-directory.json
 
 # see python script in this repo
+# requires python3 and Jinja 2.10; pip3 install --upgrade Jinja2
 jsonprint -i cbc-directory.json -o cbc-directory.html -t directory.html.j2 
 
 # WebKit command line; sudo apt-get wkhtmltopdf on Ubuntu
-wkhtmltopdf cbc-directory.html cbc-directory.pdf
+# & use local wrapper with virtual x server; sudo apt-get install xvfb
+./wkhtmltopdf-headless cbc-directory.html cbc-directory.pdf
 
 # wrapper on pdfjam specifically for creating booklets
 # sudo apt-get install texlive-extra-utils
