@@ -91,7 +91,7 @@ func main() {
         }
 
         spreadsheetId := "1BujRtoQOcKENN6HlXgywMdpnEnWgVf7zZWUAYlAMI3Y";
-        readRange := "Sheet1!A2:" + col + "22";
+        readRange := "Sheet1!A2:" + col + "23";
         resp, err := srv.Spreadsheets.Values.Get(spreadsheetId, readRange).Do()
         if err != nil {
                 log.Fatalf("Unable to retrieve data from sheet: %v", err)
@@ -103,12 +103,32 @@ func main() {
                 fmt.Println("<html><body><p>Hi everyone,</p><p>Here's the plan for this Sunday. If you have any issues please try to arrange a swap.")
                 fmt.Println("<ul>")
                 for i, row := range resp.Values {
-			if i != 11 && i != 17 && i != 18 && i != 19 {
-                        // Print columns A and E, which correspond to indices 0 and 4.
-                        fmt.Printf("<li><b>%s:</b> %s\n", row[0], row[len(row)-1])
+			if i != 11 && i != 17 && i != 18 && i != 19 && row[len(row)-1] != "-" {
+                                // Print columns A and E, which correspond to indices 0 and 4.
+                                fmt.Printf("<li><b>%s:</b> %s\n", row[0], row[len(row)-1])
 			}
                 }
                 fmt.Println("</ul>")
-                fmt.Printf("<p>Thanks as always for your service to our congregation.<p>The master list is: <a href='https://docs.google.com/spreadsheets/d/%s/'>here.</a><p>All the best, Tim</body></html>", spreadsheetId)
-        }
+	}
+
+        readRange2 := "Sheet1!A2:" + col + "23";
+        resp2, err2 := srv.Spreadsheets.Values.Get(spreadsheetId, readRange2).Do()
+
+        if err2 != nil || len(resp2.Values) == 0 {
+                fmt.Println("<p>No data found about next week at this stage.</p>")
+        } else {
+		fmt.Printf("<p><em>Looking ahead to next week, ")
+                for i, row := range resp.Values {
+			if i == 1 {
+				fmt.Printf("%s will be leading worship ", row[len(row)-1])
+			}
+			if i == 14 {
+				fmt.Printf("and %s preaching.</em></p>\n", row[len(row)-1])
+			}
+                }
+	}
+
+        fmt.Println("<p>Thanks as always for your service to our congregation.</p>")
+	fmt.Printf("<p>The master list is: <a href='https://docs.google.com/spreadsheets/d/%s/'>here.</a></p>\n", spreadsheetId)
+	fmt.Println("<p>All the best, Tim</body></html>")
 }
