@@ -7,6 +7,7 @@ import (
         "log"
         "net/http"
         "os"
+	"strings"
 
         "golang.org/x/net/context"
         "golang.org/x/oauth2"
@@ -111,15 +112,34 @@ func main() {
                 fmt.Println("</ul>")
 	}
 
-        readRange2 := "Sheet1!A2:" + col + "23";
+	alpha := "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	col2a := "";
+	if (len(col) > 1) {
+		col2a = string(alpha[strings.Index(alpha, col)/26]);
+		col = string(col[1]);
+	}
+	colIdx := strings.Index(alpha, col);
+	//log.Printf("  col idx is %d", colIdx);
+	colIdx2 := (colIdx+1) % 26;
+	//log.Printf("  next col idx is %d", colIdx2);
+	if colIdx2 == 0 {
+	  col2a = "A";
+	}
+	col2b := string(alpha[colIdx2]);
+	//log.Printf("  next col is %s", col2b);
+	col2 := col2a + col2b;
+	//log.Printf("  next col is %s", col2);
+	//log.Printf("  next col is %s", col2);
+        readRange2 := "Sheet1!A2:" + col2 + "23";
         resp2, err2 := srv.Spreadsheets.Values.Get(spreadsheetId, readRange2).Do()
 
         if err2 != nil || len(resp2.Values) == 0 {
                 fmt.Println("<p>No data found about next week at this stage.</p>")
         } else {
 		fmt.Printf("<p><em>Looking ahead to next week, ")
-                for i, row := range resp.Values {
+                for i, row := range resp2.Values {
 			if i == 1 {
+			//log.Printf("  rows found: %d", len(row));
 				fmt.Printf("%s will be leading worship ", row[len(row)-1])
 			}
 			if i == 14 {
