@@ -32,48 +32,48 @@
         {% set ns = namespace(spouse=None) %}
         {%- if c.customFields.spouse %}
           {% for s in contacts -%}
-	    {% if s.fullName == c.customFields.spouse %}
+            {% if s.fullName == c.customFields.spouse %}
               {% set ns.spouse = s %}
             {% endif %}
-	  {%- endfor %}
-	{% endif -%}
-	{% if loop.first==True or loop.previtem.lastName != c.lastName %}
+          {%- endfor %}
+        {% endif -%}
+        {% if c.customFields.churchDirectory=='true' and (loop.first==True or loop.previtem.customFields.spouse != c.fullName) %}
         <tr {% if c.stage!=undefined %}class="{{c.stage}}"{% endif %} data-href="{{c.selfRef}}">
           <th>
             {{c.lastName}}, {{c.firstName}}
             {%- if ns.spouse %} and {{ns.spouse.firstName}}{% endif -%}
-	    <span> ({{c.stage}})</span>
+            {%- if c.stage %}<span> ({{c.stage}})</span>{% endif -%}
           </th>
         </tr>
         <tr><td>
           {% if c.address %}{{c.address}}<br/>{% endif %}
           {%- if c.phone1 %}{{c.phone1}}
-	    {% if ns.spouse and c.phone1[1] == '7' %}({{c.firstName}}){% endif %}
+            {% if ns.spouse and c.phone1[1] == '7' %}({{c.firstName}}){% endif %}
             <br/>
           {% endif -%}
           {%- if c.phone2 %}{{c.phone2}}
-	    {% if ns.spouse and c.phone2[1] == '7' %}({{c.firstName}}){% endif %}
+            {% if ns.spouse and c.phone2[1] == '7' %}({{c.firstName}}){% endif %}
             <br/>
           {% endif -%}
           {% if c.email and c.email != 'null' %}{{c.email}}<br/>{% endif %}
           {%- if ns.spouse %}
             {%- if ns.spouse.phone1 and c.phone1!=ns.spouse.phone1 %}
-	      {{ ns.spouse.phone1 }}
-	      {% if ns.spouse.phone1[1] == '7' %}({{ns.spouse.firstName}}){% endif %}
+          {{ ns.spouse.phone1 }}
+          {% if ns.spouse.phone1[1] == '7' %}({{ns.spouse.firstName}}){% endif %}
               <br/>
             {% endif -%}
             {%- if ns.spouse.phone2 and c.phone2!=ns.spouse.phone2 %}
-	      {{ ns.spouse.phone2 }}
-	      {% if ns.spouse.phone2[1] == '7' %}({{ns.spouse.firstName}}){% endif %}
+              {{ ns.spouse.phone2 }}
+              {% if ns.spouse.phone2[1] == '7' %}({{ns.spouse.firstName}}){% endif %}
               <br/>
             {% endif -%}
             {%- if ns.spouse.email and c.email!=ns.spouse.email %}
               {{ns.spouse.email}}<br/>
             {% endif -%}
           {% endif -%}
-	  {%- if c.customFields.childrenNames %}Children: {{ c.customFields.childrenNames }}{% endif -%}
+          {%- if c.customFields.childrenNames %}Children: {{ c.customFields.childrenNames }}{% endif -%}
         </td></tr>
-	{% endif %}
+        {% endif %}
       {% endfor -%}
     </tbody>
     <tfoot>
