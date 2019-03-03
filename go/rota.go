@@ -103,7 +103,7 @@ func main() {
                 fmt.Println("<html><body><p>Hi everyone,</p><p>Here's the plan for this Sunday. If you have any issues please try to arrange a swap.")
                 fmt.Println("<ul>")
                 for i, row := range resp.Values {
-			if i != 11 && i != 17 && i != 18 && i != 19 && row[len(row)-1] != "-" {
+			if i != 17 && i != 18 && i != 19 && row[len(row)-1] != "-" {
                                 // Print columns A and E, which correspond to indices 0 and 4.
                                 fmt.Printf("<li><b>%s:</b> %s\n", row[0], row[len(row)-1])
 			}
