@@ -42,9 +42,18 @@
       h2 {
         border-bottom: 1px solid #666;
       }
+      header {
+        font-style: italic;
+      }
     </style>
   </head>
   <body>
+    <header>
+      <p>
+        Note that this directory contains the personal information of our church family and is provided for use only in that context. Please take good care of it whether in electronic or paper form. You may read our Privacy Notice at https://corshambaptists.org/privacy-notice/ or enquire at the office.
+      </p>
+      <p>Last updated: {{ now }}</p>
+    </header>
     {%- for c in contacts|sort(attribute='lastName') %}
       {% set ns = namespace(spouse=None) %}
       {%- if c.customFields.spouse %}

@@ -21,6 +21,7 @@
 #
 ###############################################################################
 import argparse
+import datetime
 from jinja2 import Template
 import json
 
@@ -40,7 +41,7 @@ fTemplate = open(args.template,'r')
 sTemplate = fTemplate.read()                
 
 template = Template(sTemplate)
-html = template.render(contacts = sJson)
+html = template.render(contacts = sJson, now = datetime.datetime.now().strftime('%d %b %Y %H:%M'))
 
 file = open(args.output,'w') 
 file.write(html) 
