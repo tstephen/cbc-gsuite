@@ -72,7 +72,8 @@ func main() {
 		log.Fatalf("Expected column argument")
 	}
 	//prog := os.Args[0]
-	col := os.Args[1]
+	spreadsheetId := os.Args[1]
+	col := os.Args[2]
 
 	b, err := ioutil.ReadFile("client_secret.json")
 	if err != nil {
@@ -91,7 +92,6 @@ func main() {
 		log.Fatalf("Unable to retrieve Sheets client: %v", err)
 	}
 
-	spreadsheetId := "1BujRtoQOcKENN6HlXgywMdpnEnWgVf7zZWUAYlAMI3Y"
 	readRange := "Sheet1!A2:" + col + "26"
 	resp, err := srv.Spreadsheets.Values.Get(spreadsheetId, readRange).Do()
 	if err != nil {
@@ -101,17 +101,17 @@ func main() {
 	if len(resp.Values) == 0 {
 		fmt.Println("No data found.")
 	} else {
-		fmt.Println("<html><body><p>Hi everyone,</p><p>Here's the plan for this Sunday. If you have any issues please try to arrange a swap.")
+		fmt.Println("<html><body><strong>LEADERS COPY, PLEASE EDIT AS NEEDED AND BCC TO CONGREGATION</strong><p>Hi everyone,</p><p>Here's the plan for this Sunday. If you have any issues please try to arrange a swap.")
 		fmt.Println("<ul>")
-		for i, row := range resp.Values {
-			if i != 109 && row[len(row)-1] != "-" {
-				// Print columns A and E, which correspond to indices 0 and 4.
+		for _, row := range resp.Values {
+			if len(row) > 0 && row[len(row)-1] != "-" {
 				fmt.Printf("<li><b>%s:</b> %s\n", row[0], row[len(row)-1])
 			}
 		}
 		fmt.Println("</ul>")
 	}
 
+	// Calculate next column
 	alpha := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	col2a := ""
 	if len(col) > 1 {
@@ -150,5 +150,5 @@ func main() {
 
 	fmt.Println("<p>Thanks as always for your service to our congregation.</p>")
 	fmt.Printf("<p>The master list is: <a href='https://docs.google.com/spreadsheets/d/%s/'>here.</a></p>\n", spreadsheetId)
-	fmt.Println("<p>All the best, Tim</body></html>")
+	fmt.Println("<p>All the best,</body></html>")
 }
