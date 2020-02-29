@@ -37,6 +37,5 @@ pdfbook cbc-directory.pdf
 
 # Relies on having key-based auth set up on the machine
 # destination is already uploaded manually thru WP interface so just drop replacement file in
-scp -P 722 cbc-directory.pdf cbc-directory-book.pdf corshamb@aphrodite.krystal.co.uk:public_html/wp-content/uploads/2019/02/
-
+sshpass -f /home/tstephen/.ssh/corshamb.txt scp -rP 722 cbc-directory.pdf corshamb@aphrodite.krystal.co.uk:public_html/wp-content/uploads/2019/02/
 
