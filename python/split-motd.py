@@ -40,7 +40,7 @@ for lines in range(1, len(input), splitLen):
         if outputData[0:1].isdigit():
             outputData = outputData[outputData.find('.')+1:]
         attributionStart = outputData.rfind('.')+1
-        output.write('<blockquote><p>{0}</p><footer><em>&mdash;{1}</em></footer></blockquote>'
+        output.write('<blockquote><p>{0}</p><footer><em>%26mdash%3B {1}</em></footer></blockquote>'
             .format(outputData[:attributionStart].strip(),
                     outputData[attributionStart:].strip()))
         # ... and close the file.
