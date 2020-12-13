@@ -8,7 +8,16 @@
 # Date:   08 Dec 2020
 #
 
+import argparse
 import sys
+
+# parse args
+parser = argparse.ArgumentParser()
+parser.add_argument("-c", "--color", default="ffdd00", help="foreground colour")
+parser.add_argument("-f", "--font", default="Raleway", help="font")
+parser.add_argument("-i", "--input", default="input.txt", help="input.txt")
+parser.add_argument("-o", "--output", default="output.", help="base output file")
+args = parser.parse_args()
 
 template = '''<?xml version="1.0" ?><!-- Created with Inkscape (http://www.inkscape.org/) --><svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="1920" height="1080" id="svg2383" sodipodi:version="0.32" inkscape:version="0.92.2 (5c3e80d, 2017-08-06)" version="1.0" sodipodi:docname="Bar_3.svg" inkscape:output_extension="org.inkscape.output.svg.inkscape">
   <defs id="defs2385">
@@ -86,9 +95,8 @@ template = '''<?xml version="1.0" ?><!-- Created with Inkscape (http://www.inksc
     </rdf:RDF>
   </metadata>
   <g inkscape:label="Layer 1" inkscape:groupmode="layer" id="layer1" transform="translate(1.9328e-3,0)">
-    <rect style="opacity:0;fill:#e0e7ff;fill-opacity:1;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" id="rect3160" width="1920" height="1080.0051" x="-0.0019328" y="-0.0051269531" rx="0" ry="0"/>
     <rect style="opacity:1;fill:url(#linearGradient3642);fill-opacity:1;stroke:none" id="rect2862" width="1920" height="171.37723" x="-0.0019328" y="908.62274"/>
-    <text xml:space="preserve" style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:'Raleway';-inkscape-font-specification:'Raleway';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:url(#radialGradient3654);fill-opacity:1;stroke:none;filter:url(#filter3998)" x="961.7674" y="1026.9" id="text2395"><tspan sodipodi:role="line" id="tspan2397" x="961.7674" y="1026.9" style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:82.35334778px;line-height:125%;font-family:'Raleway';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#ffdd00;fill-opacity:1;stroke:none">{0}</tspan></text>
+    <text xml:space="preserve" style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:'{2}';-inkscape-font-specification:'{2}';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#{1};fill-opacity:1;stroke:none;filter:url(#filter3998)" x="961.7674" y="1026.9" id="text2395"><tspan sodipodi:role="line" id="tspan2397" x="961.7674" y="1026.9" style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:82.35334778px;line-height:125%;font-family:'{2}';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:{1};fill-opacity:1;stroke:none">{0}</tspan></text>
   </g>
 </svg> 
 '''
@@ -187,7 +195,7 @@ template0 = '''<?xml version="1.0" encoding="UTF-8" standalone="no"?>
        style="opacity:1;fill:url(#subtitleBgGradient);fill-opacity:1;stroke:none"/>
     <text id="text2395">
        <tspan
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:84px;line-height:125%;font-family:'Raleway';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#ffdd00;fill-opacity:1;stroke:none"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:84px;line-height:125%;font-family:'{2}';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#ffdd00;fill-opacity:1;stroke:none"
          y="1020"
          x="961"
          id="tspan2397">{0}</tspan></text>
@@ -195,13 +203,11 @@ template0 = '''<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 </svg>
 '''
 splitLen = 1          # separators per output file
-# if no explicit output name use output.1.txt, output.2.txt, etc.
-outputBase = sys.argv[1] if len(sys.argv) == 2 else 'output.'
 separator = '\n'    # assumes text has blank line between items
 
 # This is shorthand and not friendly with memory
 # on very large files, but it works.
-input = open('input.txt', 'r').read().split(separator)
+input = open(args.input, 'r').read().split(separator)
 
 at = 1
 for lines in range(0, len(input), splitLen):
@@ -211,9 +217,9 @@ for lines in range(0, len(input), splitLen):
     # if line is not empty or a comment
     if len(outputData) > 0 and outputData[0] != '#':
         # Now open the output file using zfill to ensure always same length...
-        output = open(outputBase + str(at).zfill(2) + '.svg', 'w')
+        output = open(args.output + str(at).zfill(2) + '.svg', 'w')
         # ... manipulate, format and write text ...
-        output.write(template.format(outputData.strip()))
+        output.write(template.format(outputData.strip(), args.color, args.font))
         # ... and close the file.
         output.close()
 
