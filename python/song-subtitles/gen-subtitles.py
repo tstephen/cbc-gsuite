@@ -9,6 +9,7 @@
 #
 
 import argparse
+import string
 import sys
 
 # parse args
@@ -214,8 +215,8 @@ for lines in range(0, len(input), splitLen):
     # First, get list slice, convert to string and strip whitespace
     outputData = ''.join(input[lines:lines+splitLen]).strip()
 
-    # if line is not empty or a comment
-    if len(outputData) > 0 and outputData[0] != '#':
+    # Note: many *nix files start with a byte-order mark
+    if len(outputData) > 0 and outputData.strip()[0] != '#' and outputData[0].isprintable():
         # Now open the output file using zfill to ensure always same length...
         output = open(args.output + str(at).zfill(2) + '.svg', 'w')
         # ... manipulate, format and write text ...
