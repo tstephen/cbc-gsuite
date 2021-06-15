@@ -33,7 +33,6 @@ args = parser.parse_args()
 
 # non-user defaults
 bible_books = []
-pub_date = args.date + 'T10:00:00'
 sermon_topics = []
 service_type = 494
 slug = args.date
@@ -46,9 +45,11 @@ jetpack_likes_enabled = True
 
 #endpoint = 'https://knowprocess.com/wp-json/wp/v2'
 endpoint = 'https://corshambaptists.org/wp-json/wp/v2'
-media_endpoint = endpoint+'/media'
+media_endpoint = endpoint+'/media/12313'
 sermon_endpoint = endpoint+'/wpfc_sermon'
 now = datetime.datetime.now()
+if (args.date == None):
+  args.date = now.strftime("%Y/%d/%mT%H:%M:%S")
 
 # POST to upload audio file
 #try:
@@ -60,13 +61,12 @@ now = datetime.datetime.now()
 #  r = http.request(
 #    'POST',
 #    media_endpoint,
-#    headers = urllib3.make_headers(
-#      basic_auth=args.user
+# headers = urllib3.make_headers(
 #    ),
 #    files = {'file': (args.input, open(args.input, 'rb'), 'audio/mpeg')},
 #    fields = {
 #      'comment_status': comment_status,
-#      'date': pub_date,
+#      'date': args.date,
 #      'filename': (slug, file_data), 
 #      'status': status,
 #      'title': 'Audio for {} {} {}'.format(args.date[8:10], calendar.month_name[int(args.date[5:7])], args.date[0:4]),
@@ -76,49 +76,15 @@ now = datetime.datetime.now()
 #  print('ERROR: {}: {}'.format(e.code, e.reason))
 #  print('  {}', e)
 #  sys.exit('unable to upload audio')
-#token = base64.b64encode(bytes(args.user, 'UTF-8'))
-#print('  token: '+str(token))
-#headers = {'Authorization': 'Basic ' + str(token)} 
-#media = {'file': open(args.input, 'rb')}
-#print('  input:'+args.user)
+token = base64.b64encode(bytes(args.user, 'UTF-8'))
+print('  token: '+token.decode())
+auth = 'Basic ' + token.decode()
+print('  auth: '+auth)
+headers = {'Authorization': auth}
+media = {'file': open(args.input, 'rb')}
+print('  input:'+args.user)
 #image = requests.post(media_endpoint, auth=(args.user.split(':')[0], args.user.split(':')[1]), files=media)
-#image = requests.post(media_endpoint, headers=headers, files=media)
+image = requests.put(media_endpoint, headers=headers, files=media)
 #print('Your media is published on ' + json.loads(image.content)['link'])
-#print('Your media is published on ' + str(image.content))
+print('Your media is published on ' + str(image.content))
 
-
-# POST to create sermon
-try:
-  http = urllib3.PoolManager()
-  r = http.request(
-    'POST',
-    sermon_endpoint,
-    headers = urllib3.make_headers(basic_auth=args.user),
-    fields = {
-      'bible_passage': args.bible,
-      'comment_status': comment_status,
-      'content': args.extract,
-      'date': pub_date,
-      'extract': args.extract,
-      'ping_status': ping_status,
-      'sermon_audio': 'https://corshambaptists.org/wp-content/uploads/sermons/{}/{}/{}'.format(now.year, str(now.month).zfill(2), args.input),
-      'sermon_bulletin': args.notices,
-      'sermon_date': args.date,
-      'sermon_description': args.extract,
-      'sermon_video_url': args.video,
-      'slug': slug,
-      'status': status,
-      'title': 'Service for {} {} {}'.format(args.date[8:10], calendar.month_name[int(args.date[5:7])], args.date[0:4]),
-      'wpfc_bible_book': ''.join(bible_books),
-      'wpfc_preacher': args.preacher,
-      'series_wpfc_sermon': args.series,
-      'wpfc_sermon_topics': ''.join(sermon_topics),
-      'wpfc_service_type': service_type
-    }
-  )
-except urllib3.exceptions.HTTPError as e:
-  print('ERROR: {}: {}'.format(e.code, e.reason))
-  print('  {}', e)
-  sys.exit('ERROR: {}: {}'.format(e.code, e.reason))
-
-print('SUCCESS: {}', r.data)

@@ -1,3 +1,19 @@
+
+##  Steps involved
+
+1. Get the audio and meta-data from the already published YouTube video ;
+3. Get the transcript (manually written and shared)
+2. Post the audio to WordPress
+4. Post the sermon entry to WordPress (requires transcript, notices and audio to already be delivered or at a 'well-known' location)
+
+## Fetch audio and metadata from YouTube
+
+(youtube-dl)[https://github.com/ytdl-org/youtube-dl] is a cross-platform, command-line tool for fetching all manner of data from YouTube and other sharing sites. This will fetch audio only and add meta-data such as the YouTube description and so forth as audio tags.
+
+```
+youtube-dl --add-metadata -x https://youtu.be/id
+```
+
 ## Authentication
 
 It's worth knowing that the REST API is designed first and foremost for use within the web server so to use it remotely requires an alternative authentication mechanism. I'm using Application Passwords.
