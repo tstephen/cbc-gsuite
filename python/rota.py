@@ -21,6 +21,7 @@ from google.oauth2.credentials import Credentials
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 SPREADSHEET_ID = '1e0BmwuWKUBP3GWwcdWEtUyNRjqlFzLVZTVtG5si1pvo'
 SHEET_NAME = 'Rota'
+NO_HDR_COLS = 1
 
 FROM = 'info@corshambaptists.org'
 TO = 'tims@corshambaptists.org'
@@ -40,27 +41,27 @@ def calcSunday():
   return sun2
 
 def calcWeek(sun2):
-  # No. of weeks passed (1 non-data column hence add 1 to start on B)
-  weeks = ((sun2 - sun1).days / 7) + 1
+  # No. of weeks passed (1 column header means add 1 to start on B etc)
+  weeks = ((sun2 - sun1).days / 7) + NO_HDR_COLS
   if args.verbose:
     print('  column offset is: {} ...'.format(int(weeks)))
   return int(weeks)
 
 def calcCol(weeks):
   # work out which column we want
-  CHAR1 = " ABCDEFGHIJKLMNOPQRSTUVWXY"
-  CHAR2 = "ABCDEFGHIJKLMNOPQRSTUVWXY"
+  CHAR1 = " ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  CHAR2 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   col = None
-  if (weeks <= 24):
+  if (weeks <= (26-NO_HDR_COLS)):
+    col = CHAR2[int(weeks % 26):int(weeks % 26)+1]
     if args.verbose:
       print('  single char col')
-    col = CHAR2[int(weeks % 26):int(weeks % 26)+1]
   else:
+    col = CHAR1[int(weeks / 26):int(weeks / 26)+1] + CHAR2[int(weeks % 26):int(weeks % 26)+1]
     if args.verbose:
       print('  double char col')
-    col = CHAR1[int(weeks / 26):int(weeks / 26)+1] + CHAR2[int(weeks % 26):int(weeks % 26)+1]
   if args.verbose:
-    print("  this week's col is: {}".format(col))
+    print("  this week's col is: '{}'".format(col))
   return col
 
 def composeMessage(spreadsheet, sheetName, weeks, col):
@@ -89,8 +90,11 @@ def composeMessage(spreadsheet, sheetName, weeks, col):
 
     # Call the Sheets API
     sheet = service.spreadsheets()
+    range = sheetName+'!A1:'+col+'26'
+    if args.verbose:
+      print("  reading sheet range: '{}'".format(range))
     result = sheet.values().get(spreadsheetId=spreadsheet,
-                                range=sheetName+'!A1:'+col+'26').execute()
+                                range=range).execute()
     values = result.get('values', [])
 
     html = "<html><body><strong>LEADERS COPY, PLEASE EDIT AS NEEDED AND BCC TO CONGREGATION</strong><p>Hi everyone,</p><p>Here's the plan for this Sunday. If you have any issues please try to arrange a swap."
