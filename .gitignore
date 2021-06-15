@@ -1,5 +1,7 @@
-go/client_secret.json
-go/rota
-input*
-output*
-202?-*
+**/*.bak
+**/*.html
+**/*.pdf
+**/cbc-directory*
+**/client_secret.json
+**/credentials.json
+**/token.json
