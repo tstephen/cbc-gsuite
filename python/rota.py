@@ -3,6 +3,7 @@
 
 from __future__ import print_function
 
+import argparse
 from datetime import datetime
 from datetime import timedelta
 import os
@@ -25,6 +26,8 @@ FROM = 'info@corshambaptists.org'
 TO = 'tims@corshambaptists.org'
 bcc_you = 'data@corshambaptists.org'
 
+args = None
+
 # the first week in the spreadsheet (must always be a Sunday)
 sun1 = datetime(2021,1,3)
 
@@ -32,13 +35,15 @@ def calcSunday():
   now = datetime.now()
   sun2 = (now + timedelta(weeks=1) - timedelta(days=now.isoweekday()))
 
-  print(sun2)
+  if args.verbose:
+    print('  next Sunday is: {} ...'.format(sun2))
   return sun2
 
 def calcWeek(sun2):
   # No. of weeks passed (1 non-data column hence add 1 to start on B)
   weeks = ((sun2 - sun1).days / 7) + 1
-  print(int(weeks))
+  if args.verbose:
+    print('  column offset is: {} ...'.format(int(weeks)))
   return int(weeks)
 
 def calcCol(weeks):
@@ -47,12 +52,15 @@ def calcCol(weeks):
   CHAR2 = "ABCDEFGHIJKLMNOPQRSTUVWXY"
   col = None
   if (weeks <= 24):
-    print('single char col')
+    if args.verbose:
+      print('  single char col')
     col = CHAR2[int(weeks % 26):int(weeks % 26)+1]
   else:
-    print('double char col')
+    if args.verbose:
+      print('  double char col')
     col = CHAR1[int(weeks / 26):int(weeks / 26)+1] + CHAR2[int(weeks % 26):int(weeks % 26)+1]
-  print(col)
+  if args.verbose:
+    print("  this week's col is: {}".format(col))
   return col
 
 def composeMessage(spreadsheet, sheetName, weeks, col):
@@ -91,9 +99,16 @@ def composeMessage(spreadsheet, sheetName, weeks, col):
         print('No data found.')
     else:
         html += '<ul>'
-        for row in values:
-            if row[weeks] != '-':
+        for idx, row in enumerate(values):
+            if args.verbose:
+              print("  processing row {}...".format(idx))
+            try:
+              if args.verbose:
+                print("  ... col {} contains: '{}'".format(weeks, row[weeks]))
+              if row[weeks] != None and row[weeks] != '-':
                 html += ('<li><strong>%s:</strong> %s</li>\n' % (row[0], row[weeks]))
+            except:
+              print('  no data in row {} and col {}'.format(idx, weeks))
         html += '</ul>'
 
         #html += "<p><em>Looking ahead to next week, "
@@ -112,8 +127,15 @@ def composeMessage(spreadsheet, sheetName, weeks, col):
         html += "<p>The master list is: <a href='https://docs.google.com/spreadsheets/d/%s/'>here.</a></p>\n" % spreadsheet
         html += "<p>All the best,</body></html>"
 
-    print(html)
+    if args.verbose:
+        print('  composed msg: {}'.format(html))
     return html
+
+def parseArgs():
+  parser = argparse.ArgumentParser()
+  parser.add_argument("-v", "--verbose", help="increase output verbosity",
+      action="store_true")
+  return parser.parse_args()
 
 def sendMail(html):
     msg = MIMEMultipart('alternative')
@@ -137,11 +159,12 @@ def sendMail(html):
     s.quit()
 
 if __name__ == '__main__':
+    args = parseArgs()
     sun2 = calcSunday()
     weeks = calcWeek(sun2)
     col = calcCol(weeks)
     html = composeMessage(SPREADSHEET_ID, SHEET_NAME, weeks, col)
     try:
-        sendMail(html)
+      sendMail(html)
     except:
-        print('Unable to send message')
+      print('Unable to send message')
