@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright 2015-2018 Tim Stephenson and contributors
+# Copyright 2017-2021 Tim Stephenson and contributors
 #
 #  Licensed under the Apache License, Version 2.0 (the "License"); you may not
 #  use this file except in compliance with the License.  You may obtain a copy
@@ -37,5 +37,5 @@ pdfbook2 cbc-directory.pdf
 
 # Relies on having key-based auth set up on the machine
 # destination is already uploaded manually thru WP interface so just drop replacement file in
-sshpass -f /home/tstephen/.ssh/corshamb.txt scp -rP 722 cbc-directory.pdf corshamb@aphrodite.krystal.co.uk:public_html/wp-content/uploads/2019/02/
+sshpass -f /home/tstephen/.ssh/corshamb.txt scp -rP 722 cbc-directory.pdf cbc-directory-book.pdf corshamb@aphrodite.krystal.co.uk:public_html/wp-content/uploads/2019/02/
 
