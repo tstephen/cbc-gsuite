@@ -33,7 +33,7 @@ jsonprint -i cbc-directory.json -o cbc-directory.html -t directory.html.j2
 
 # wrapper on pdfjam specifically for creating booklets
 # sudo apt-get install texlive-extra-utils
-pdfbook cbc-directory.pdf
+pdfbook2 cbc-directory.pdf
 
 # Relies on having key-based auth set up on the machine
 # destination is already uploaded manually thru WP interface so just drop replacement file in
