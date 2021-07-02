@@ -1,10 +1,11 @@
 
 ##  Steps involved
 
-1. Get the audio and meta-data from the already published YouTube video ;
+1. Post a bare bones sermon entry with date, preacher etc.
+1. (After the service) Get the audio and meta-data from the already published YouTube video ;
+2. Post the audio to WordPress media library
 3. Get the transcript (manually written and shared)
-2. Post the audio to WordPress
-4. Post the sermon entry to WordPress (requires transcript, notices and audio to already be delivered or at a 'well-known' location)
+4. Update the existing sermon entry in WordPress with audio and transcript (maybe doing each separately as not sure when each will arrive)
 
 ## Fetch audio and metadata from YouTube
 
