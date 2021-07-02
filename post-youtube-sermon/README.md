@@ -54,12 +54,6 @@ curl -u "tims@corshambaptists.org:h39d Fbx0 FqVA tBbr Fs4b nhKY" -X POST -d 'dat
   -d '_featured_url=https://corshambaptists.org/wp-content/uploads/sermons/2020/12/VideoCover_Sermon_Advent3.png' -d 'title=Loving Kindness - Sunday Service (27 Dec 2020)' https://corshambaptists.org/wp-json/wp/v2/wpfc_sermon
 ```
 
-  -d 'featured_media=11061', \
-  -d 'comment_status=closed', \
-  -d 'ping_status=open', \
-  -d 'jetpack_sharing_enabled=true', \
-  -d 'jetpack_likes_enabled=true', \
-
 ## Check the result in all its detail
 ```
 curl -u "username:application password" https://corshambaptists.org/wp-json/wp/v2/wpfc_sermon/11064
