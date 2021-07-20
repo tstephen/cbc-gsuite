@@ -1,0 +1,5 @@
+*.mp3
+*.m4a
+*.swp
+env.sh
+wp-creds
