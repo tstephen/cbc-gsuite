@@ -8,7 +8,7 @@
 
 ## Fetch audio and metadata from YouTube
 
-(youtube-dl)[https://github.com/ytdl-org/youtube-dl] is a cross-platform, command-line tool for fetching all manner of data from YouTube and other sharing sites. This will fetch audio only(so much smaller) and add meta-data such as the YouTube description and so forth as audio tags.
+[youtube-dl](https://github.com/ytdl-org/youtube-dl) is a cross-platform, command-line tool for fetching all manner of data from YouTube and other sharing sites. This will fetch audio only(so much smaller) and add meta-data such as the YouTube description and so forth as audio tags.
 
 ```
 youtube-dl --add-metadata -x https://youtu.be/id
