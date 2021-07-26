@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # read WordPress credentials
-WP_USR_PWD=`cat wp-creds`
+export WP_USR_PWD=`cat wp-creds`
 
 # get data about the most recent sermon published
 META=`curl -u $WP_USR_PWD https://corshambaptists.org/wp-json/wp/v2/wpfc_sermon/ | jq  '{ id: .[0].id, slug: .[0].slug, video_url: .[0].sermon_video_url }'`
