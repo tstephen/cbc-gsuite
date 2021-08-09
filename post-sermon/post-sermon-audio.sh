@@ -9,6 +9,9 @@ SERMON_ID=`echo $META | jq --raw-output .id`
 TITLE=`echo $META | jq --raw-output .slug`
 YT_URL=`echo $META | jq --raw-output .video_url`
 
+YEAR=${TITLE:0:4}
+MONTH=${TITLE:5:2}
+
 # get the audio component of the live stream
 youtube-dl -x --add-metadata -o $TITLE'.%(ext)s' $YT_URL
 
