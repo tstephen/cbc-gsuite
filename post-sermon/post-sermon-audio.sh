@@ -20,11 +20,14 @@ echo '  deploying '$TITLE' to '$YEAR'/'$MONTH
 scp -P 722 $TITLE.m4a corshamb@aphrodite.krystal.co.uk:public_html/wp-content/uploads/sermons/$YEAR/$MONTH/
 
 # create a media post for the audio
-curl -u $WP_USR_PWD -H 'Content-Disposition: attachment; filename="'$TITLE.m4a'"' \
-  -d 'jetpack_sharing_enabled=false' \
-  -d 'status=draft' \
-  -X POST \
-  https://corshambaptists.org/wp-json/wp/v2/media/
+# this works but it skips the sermons folder from the path so we end up with
+# a media record pointing at non-existent file
+# However the good news is that we don't need a media record
+#curl -u $WP_USR_PWD -H 'Content-Disposition: attachment; filename="'$TITLE.m4a'"' \
+#  -d 'jetpack_sharing_enabled=false' \
+#  -d 'status=draft' \
+#  -X POST \
+#  https://corshambaptists.org/wp-json/wp/v2/media/
 
 # link the audio to the sermon post
 curl -u $WP_USR_PWD -X 'POST' \
