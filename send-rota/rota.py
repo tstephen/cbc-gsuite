@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# 
+#
 # Read rota sheet and email to admin for further editing
 # Install requirements: pip3 install -r requirements.txt
 
@@ -19,6 +19,9 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+
+import requests
+from requests.auth import HTTPBasicAuth
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
@@ -99,6 +102,7 @@ def composeMessage(spreadsheet, sheetName, weeks, col):
                                 range=range).execute()
     values = result.get('values', [])
 
+    plan = {}
     html = "<html><body><strong>DRAFT, PLEASE EDIT AS NEEDED AND FORWARD AS APPROPRIATE</strong><p>Hi everyone,</p><p>Here's the plan for this Sunday. If you have any issues please try to arrange a swap."
 
     if not values:
@@ -113,6 +117,7 @@ def composeMessage(spreadsheet, sheetName, weeks, col):
                 print("  ... col {} contains: '{}'".format(weeks, row[weeks]))
               if row[weeks] != None and row[weeks] != '-':
                 html += ('<li><strong>%s:</strong> %s</li>\n' % (row[0], row[weeks]))
+                plan[row[0]] = row[weeks]
             except:
               if args.verbose:
                 print('  no data in row {} and col {}'.format(idx, weeks))
@@ -135,12 +140,13 @@ def composeMessage(spreadsheet, sheetName, weeks, col):
         html += "<p>All the best,</body></html>"
 
     print('Message:\n{}'.format(html))
-    return html
+    plan['html'] = html
+    return plan
 
 def parseArgs():
   parser = argparse.ArgumentParser()
   parser.add_argument("-v", "--verbose", help="increase output verbosity",
-      action="store_true")
+    action="store_true")
   return parser.parse_args()
 
 def sendMail(subject, html):
@@ -163,17 +169,57 @@ def sendMail(subject, html):
     s.sendmail(FROM, TO, msg.as_string())
     s.quit()
 
+def startProc(plan):
+    if args.verbose:
+      print('Starting workflow with {} ...'.format(plan))
+
+    json = { "processDefinitionKey": "PlanService", "businessKey": plan['subject'], "variables": [] }
+
+    if 'serviceDate' in plan:
+      json['variables'].append({ "name": "serviceDate", "type": "string", "value": plan['serviceDate'] })
+    if 'Worship leader' in plan:
+      json['variables'].append({ "name": "worshipLeader", "type": "string", "value": plan['Worship leader'] })
+    if 'Intercessory prayer' in plan:
+      json['variables'].append({ "name": "intercessor", "type": "string", "value": plan['Intercessory prayer'] })
+    if 'Passage' in plan:
+      json['variables'].append({ "name": "passage", "type": "string", "value": plan['Passage'] })
+    if 'Preacher' in plan:
+      json['variables'].append({ "name": "preacher", "type": "string", "value": plan['Preacher'] })
+    if 'Service co-ordination' in plan:
+      json['variables'].append({ "name": "serviceCoordinator", "type": "string", "value": plan['Service co-ordination'] })
+    if 'Video streaming' in plan:
+      json['variables'].append({ "name": "stream", "type": "string", "value": plan['Video streaming'] })
+    if 'Sound' in plan:
+      json['variables'].append({ "name": "sound", "type": "string", "value": plan['Sound'] })
+    if 'html' in plan:
+      json['variables'].append({ "name": "message", "type": "string", "value": plan['html'] })
+
+    f = open("flowable-creds", "r")
+    flowableCreds = f.read().strip()
+    print('XXXX '+flowableCreds)
+
+    r = requests.post('https://flowable.knowprocess.com/flowable-rest/service/runtime/process-instances',
+        auth=('info@corshambaptists.org', flowableCreds),
+        json=json)
+
 if __name__ == '__main__':
     args = parseArgs()
     sun2 = calcSunday()
     weeks = calcWeek(sun2)
     col = calcCol(weeks)
-    subject = "Plan for Sunday Service on " + sun2.strftime("%d %b")
-    print('Subject: {}'.format(subject))
-    html = composeMessage(SPREADSHEET_ID, SHEET_NAME, weeks, col)
+    plan = composeMessage(SPREADSHEET_ID, SHEET_NAME, weeks, col)
+    plan['serviceDate'] = sun2.strftime("%Y-%m-%d")
+    plan['subject'] = "Plan for Sunday Service on " + sun2.strftime("%d %b")
+    print('Subject: {}'.format(plan['subject']))
     try:
-      sendMail(subject, html)
-    except:
+      sendMail(plan['subject'], plan['html'])
+      startProc(plan);
+    except Exception as e:
       if args.verbose:
-        print('Unable to send message, is there a local mail transport agent?')
+        print('Unable to send message or start workflow; check credentials and local mail transport agent')
+        print(e)
       sys.exit(-1)
+    else:
+      if args.verbose:
+        print('Sent message and started workflow successfully')
+      sys.exit(0)
