@@ -2,6 +2,9 @@
 #
 # Read rota sheet and email to admin for further editing
 # Install requirements: pip3 install -r requirements.txt
+#
+# Author: Tim Stephenson
+#
 
 from __future__ import print_function
 
@@ -25,14 +28,13 @@ from requests.auth import HTTPBasicAuth
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
-SPREADSHEET_ID = '1e0BmwuWKUBP3GWwcdWEtUyNRjqlFzLVZTVtG5si1pvo'
+SHEET_ID = '1e0BmwuWKUBP3GWwcdWEtUyNRjqlFzLVZTVtG5si1pvo'
 SHEET_NAME = 'Rota'
-NO_HDR_COLS = 1
 
-FROM = 'info@corshambaptists.org'
-TO = 'office@corshambaptists.org'
-CC = 'info@corshambaptists.org'
-# the first week in the spreadsheet (must always be a Sunday)
+FROM = 'noreply@knowprocess.com'
+TO = 'info@corshambaptists.org'
+BCC = 'tim@knowprocess.com'
+# the first week in the spreadsheet must be first Sunday of the current year
 SUN1 = datetime(2021,1,3)
 
 args = None
@@ -47,7 +49,7 @@ def calcSunday():
 
 def calcWeek(sun2):
   # No. of weeks passed (1 column header means add 1 to start on B etc)
-  weeks = ((sun2 - SUN1).days / 7) + NO_HDR_COLS
+  weeks = ((sun2 - SUN1).days / 7) + args.headingcolumns
   if args.verbose:
     print('  column offset is: {} ...'.format(int(weeks)))
   return int(weeks)
@@ -57,7 +59,7 @@ def calcCol(weeks):
   CHAR1 = " ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   CHAR2 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   col = None
-  if (weeks <= (26-NO_HDR_COLS)):
+  if (weeks <= (26-args.headingcolumns)):
     col = CHAR2[int(weeks % 26):int(weeks % 26)+1]
     if args.verbose:
       print('  single char col')
@@ -102,7 +104,10 @@ def composeMessage(spreadsheet, sheetName, weeks, col):
                                 range=range).execute()
     values = result.get('values', [])
 
-    plan = {}
+    plan = { 'service':values[0][0] }
+    if args.verbose:
+      print("  found service '{}'".format(values[0][0]))
+
     html = "<html><body><strong>DRAFT, PLEASE EDIT AS NEEDED AND FORWARD AS APPROPRIATE</strong><p>Hi everyone,</p><p>Here's the plan for this Sunday. If you have any issues please try to arrange a swap."
 
     if not values:
@@ -147,13 +152,20 @@ def parseArgs():
   parser = argparse.ArgumentParser()
   parser.add_argument("-v", "--verbose", help="increase output verbosity",
     action="store_true")
+  parser.add_argument("-s", "--sheet", help="specify the source Google sheet",
+    default=SHEET_ID)
+  parser.add_argument("-hc", "--headingcolumns", help="number of heading columns",
+    type=int, default=2)
+  parser.add_argument("-cc", "--cc", help="comma-separated list of email addresses to cc",
+    default="")
   return parser.parse_args()
 
 def sendMail(subject, html):
     msg = MIMEMultipart('alternative')
     msg['From'] = FROM
     msg['To'] = TO
-    msg['Cc'] = CC
+    msg['Cc'] = args.cc
+    recipients = args.cc.split(",") + BCC.split(",") + [TO]
     msg['Subject'] = subject
     text_part = MIMEText("Please view in an HTML capable mail reader", 'plain')
     html_part = MIMEText(html, 'html')
@@ -166,7 +178,7 @@ def sendMail(subject, html):
 
     # Send the message via our own SMTP server.
     s = smtplib.SMTP('localhost')
-    s.sendmail(FROM, TO, msg.as_string())
+    s.sendmail(FROM, recipients, msg.as_string())
     s.quit()
 
 def startProc(plan):
@@ -175,6 +187,8 @@ def startProc(plan):
 
     json = { "processDefinitionKey": "PlanService", "businessKey": plan['subject'], "variables": [] }
 
+    if 'service' in plan:
+      json['variables'].append({ "name": "service", "type": "string", "value": plan['service'] })
     if 'serviceDate' in plan:
       json['variables'].append({ "name": "serviceDate", "type": "string", "value": plan['serviceDate'] })
     if 'Worship leader' in plan:
@@ -196,7 +210,6 @@ def startProc(plan):
 
     f = open("flowable-creds", "r")
     flowableCreds = f.read().strip()
-    print('XXXX '+flowableCreds)
 
     r = requests.post('https://flowable.knowprocess.com/flowable-rest/service/runtime/process-instances',
         auth=('info@corshambaptists.org', flowableCreds),
@@ -207,9 +220,9 @@ if __name__ == '__main__':
     sun2 = calcSunday()
     weeks = calcWeek(sun2)
     col = calcCol(weeks)
-    plan = composeMessage(SPREADSHEET_ID, SHEET_NAME, weeks, col)
+    plan = composeMessage(args.sheet, SHEET_NAME, weeks, col)
     plan['serviceDate'] = sun2.strftime("%Y-%m-%d")
-    plan['subject'] = "Plan for Sunday Service on " + sun2.strftime("%d %b")
+    plan['subject'] = "Plan for {} Service on {}".format(plan['service'], plan['Date'])
     print('Subject: {}'.format(plan['subject']))
     try:
       sendMail(plan['subject'], plan['html'])
