@@ -35,7 +35,6 @@ jsonprint -i cbc-directory.json -o cbc-directory.html -t directory.html.j2
 # sudo apt-get install texlive-extra-utils
 pdfbook2 cbc-directory.pdf
 
-# Relies on having key-based auth set up on the machine
-# destination is already uploaded manually thru WP interface so just drop replacement file in
+# file is already uploaded manually thru WP interface so just drop replacement file in
 sshpass -f /home/tstephen/.ssh/corshamb.txt scp -rP 722 cbc-directory.pdf cbc-directory-book.pdf corshamb@aphrodite.krystal.co.uk:public_html/wp-content/uploads/2019/02/
 
