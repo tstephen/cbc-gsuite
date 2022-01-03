@@ -32,10 +32,11 @@ SHEET_ID = '1e0BmwuWKUBP3GWwcdWEtUyNRjqlFzLVZTVtG5si1pvo'
 SHEET_NAME = 'Rota'
 
 FROM = 'noreply@knowprocess.com'
-TO = 'info@corshambaptists.org'
+TO = 'data@corshambaptists.org'
 BCC = 'tim@knowprocess.com'
 # the first week in the spreadsheet must be first Sunday of the current year
-SUN1 = datetime(2021,1,3)
+NYD =  datetime.now().replace(day=1,month=1)
+SUN1 = nyd.replace(day=1+(6-NYD.weekday()))
 
 args = None
 
