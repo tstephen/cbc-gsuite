@@ -29,14 +29,14 @@ from requests.auth import HTTPBasicAuth
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 SHEET_ID = '1e0BmwuWKUBP3GWwcdWEtUyNRjqlFzLVZTVtG5si1pvo'
-SHEET_NAME = 'Rota'
+TAB_NAME = 'Rota'
 
 FROM = 'noreply@knowprocess.com'
 TO = 'data@corshambaptists.org'
 BCC = 'tim@knowprocess.com'
 # the first week in the spreadsheet must be first Sunday of the current year
 NYD =  datetime.now().replace(day=1,month=1)
-SUN1 = nyd.replace(day=1+(6-NYD.weekday()))
+SUN1 = NYD.replace(day=1+(6-NYD.weekday()))
 
 args = None
 
@@ -155,6 +155,8 @@ def parseArgs():
     action="store_true")
   parser.add_argument("-s", "--sheet", help="specify the source Google sheet",
     default=SHEET_ID)
+  parser.add_argument("-t", "--tab", help="specify the source tab",
+    default=TAB_NAME)
   parser.add_argument("-hc", "--headingcolumns", help="number of heading columns",
     type=int, default=2)
   parser.add_argument("-cc", "--cc", help="comma-separated list of email addresses to cc",
@@ -221,7 +223,7 @@ if __name__ == '__main__':
     sun2 = calcSunday()
     weeks = calcWeek(sun2)
     col = calcCol(weeks)
-    plan = composeMessage(args.sheet, SHEET_NAME, weeks, col)
+    plan = composeMessage(args.sheet, args.tab, weeks, col)
     plan['serviceDate'] = sun2.strftime("%Y-%m-%d")
     plan['subject'] = "Plan for {} Service on {}".format(plan['service'], plan['Date'])
     print('Subject: {}'.format(plan['subject']))
