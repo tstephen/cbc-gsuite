@@ -11,13 +11,15 @@ YT_URL=`echo $META | jq --raw-output .video_url`
 
 YEAR=${TITLE:0:4}
 MONTH=${TITLE:5:2}
+DATE=${TITLE:7:2}
 
 # get the audio component of the live stream
 youtube-dl -x --add-metadata -o $TITLE'.%(ext)s' $YT_URL
 
 # push the audio to the web server
 echo '  deploying '$TITLE' to '$YEAR'/'$MONTH
-scp -P 722 $TITLE.m4a corshamb@aphrodite.krystal.co.uk:public_html/wp-content/uploads/sermons/$YEAR/$MONTH/
+## NOTE: this will fail if dir not pre-created
+scp -P 722 $TITLE.m4a corshamb@aphrodite.krystal.co.uk:public_html/wp-content/uploads/sermons/$YEAR/$MONTH/$TITLE.m4a
 
 # create a media post for the audio
 # this works but it skips the sermons folder from the path so we end up with
@@ -34,5 +36,6 @@ curl -u $WP_USR_PWD -X 'POST' \
   'https://corshambaptists.org/wp-json/wp/v2/wpfc_sermon/'$SERMON_ID \
   -H 'Accept: application/json' \
   -H 'Content-Type: application/x-www-form-urlencoded' \
+  -d 'sermon_date='`date +%s` \
   -d 'sermon_audio=https%3A%2F%2Fcorshambaptists.org%2Fwp-content%2Fuploads%2Fsermons%2F'$YEAR'%2F'$MONTH'%2F'$TITLE'.m4a'
 
