@@ -16,10 +16,13 @@ DATE=${TITLE:7:2}
 # get the audio component of the live stream
 youtube-dl -x --add-metadata -o $TITLE'.%(ext)s' $YT_URL
 
+# trim silence from start (typically run a pre-live screen for a couple of minutes)
+ffmpeg -i $TITLE.m4a -af silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-70dB trimmed-$TITLE.m4a
+
 # push the audio to the web server
 echo '  deploying '$TITLE' to '$YEAR'/'$MONTH
 ## NOTE: this will fail if dir not pre-created
-scp -P 722 $TITLE.m4a corshamb@aphrodite.krystal.co.uk:public_html/wp-content/uploads/sermons/$YEAR/$MONTH/$TITLE.m4a
+scp -P 722 trimmed-$TITLE.m4a corshamb@aphrodite.krystal.co.uk:public_html/wp-content/uploads/sermons/$YEAR/$MONTH/$TITLE.m4a
 
 # create a media post for the audio
 # this works but it skips the sermons folder from the path so we end up with
