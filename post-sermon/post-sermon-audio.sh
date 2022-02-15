@@ -1,5 +1,6 @@
 #!/bin/bash
 
+REPORT_ERROR_TO=tim@knowprocess.com
 # read WordPress credentials
 export WP_USR_PWD=`cat wp-creds`
 
@@ -8,6 +9,18 @@ META=`curl -u $WP_USR_PWD https://corshambaptists.org/wp-json/wp/v2/wpfc_sermon/
 SERMON_ID=`echo $META | jq --raw-output .id`
 TITLE=`echo $META | jq --raw-output .slug`
 YT_URL=`echo $META | jq --raw-output .video_url`
+if [ -z "$YT_URL" ]
+then
+    # No YouTube URL, report error and quit.
+    echo "Subject: Unable to post sermon audio" > post-sermon-failure.txt
+    echo "Hi, I'm afraid I have been unable to post audio for "$sermon_id" because no YouTube url is specified in WordPress." >> post-sermon-failure.txt
+    echo "If this is because there was no stream this week then please ignore this message. However if there was a stream please add the URL and ask me to try again." >> post-sermon-failure.txt
+    echo "The CBC bot" >> post-sermon-failure.txt
+    sendmail $REPORT_ERROR_TO < post-sermon-failure.txt
+    exit -1
+else
+    # So far, so good, continuing...
+fi
 
 YEAR=${TITLE:0:4}
 MONTH=${TITLE:5:2}
