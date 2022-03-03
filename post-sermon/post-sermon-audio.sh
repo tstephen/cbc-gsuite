@@ -1,4 +1,7 @@
 #!/bin/bash
+#
+# Copyright 2021-2022 Tim Stephenson
+# License: Apache 2.0
 
 REPORT_ERROR_TO=tim@knowprocess.com
 # read WordPress credentials
@@ -18,9 +21,8 @@ then
     echo "The CBC bot" >> post-sermon-failure.txt
     sendmail $REPORT_ERROR_TO < post-sermon-failure.txt
     exit -1
-else
-    # So far, so good, continuing...
 fi
+# So far, so good, continuing...
 
 YEAR=${TITLE:0:4}
 MONTH=${TITLE:5:2}
