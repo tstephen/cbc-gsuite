@@ -40,7 +40,7 @@ if [[ $TITLE == $YEAR-$MONTH-$DATE* ]]; then
 fi
 
 # trim silence from start (typically run a pre-live screen for a couple of minutes)
-ffmpeg -i $TITLE.m4a -af silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-70dB $NORMAL_$TITLE.m4a
+ffmpeg -i $TITLE.m4a -af silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-70dB $NORMAL_TITLE.m4a
 
 # push the audio to the web server
 echo '  deploying '$NORMAL_TITLE' to '$YEAR'/'$MONTH
