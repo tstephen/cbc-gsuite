@@ -8,8 +8,9 @@ REPORT_ERROR_TO=tim@knowprocess.com
 export WP_USR_PWD=`cat wp-creds`
 
 # get data about the most recent sermon published
-META=`curl -u $WP_USR_PWD https://corshambaptists.org/wp-json/wp/v2/wpfc_sermon/ | jq  '{ id: .[0].id, slug: .[0].slug, video_url: .[0].sermon_video_url }'`
+META=`curl -u $WP_USR_PWD https://corshambaptists.org/wp-json/wp/v2/wpfc_sermon/ | jq  '{ id: .[0].id, slug: .[0].slug, video_url: .[0].sermon_video_url, sermon_date: .[0].sermon_date }'`
 SERMON_ID=`echo $META | jq --raw-output .id`
+SERMON_DATE=`echo $META | jq --raw-output .sermon_date`
 TITLE=`echo $META | jq --raw-output .slug`
 YT_URL=`echo $META | jq --raw-output .video_url`
 if [ -z "$YT_URL" ]
@@ -24,20 +25,27 @@ then
 fi
 # So far, so good, continuing...
 
-YEAR=${TITLE:0:4}
-MONTH=${TITLE:5:2}
-DATE=${TITLE:7:2}
+SERMON_DATE=`date -d @$SERMON_DATE +"%Y-%m-%d"`
+YEAR=${SERMON_DATE:0:4}
+MONTH=${SERMON_DATE:5:2}
+DATE=${SERMON_DATE:8:2}
+NORMAL_TITLE=$YEAR_$MONTH_$DATE_$TITLE
 
 # get the audio component of the live stream
 youtube-dl -x --add-metadata -o $TITLE'.%(ext)s' $YT_URL
+# avoid file name clash between normalised title and received
+if [[ $TITLE == $YEAR-$MONTH-$DATE* ]]; then
+    mv $TITLE.m4a tmp-$TITLE.m4a
+    TITLE=tmp-$TITLE
+fi
 
 # trim silence from start (typically run a pre-live screen for a couple of minutes)
-ffmpeg -i $TITLE.m4a -af silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-70dB trimmed-$TITLE.m4a
+ffmpeg -i $TITLE.m4a -af silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-70dB $NORMAL_$TITLE.m4a
 
 # push the audio to the web server
-echo '  deploying '$TITLE' to '$YEAR'/'$MONTH
+echo '  deploying '$NORMAL_TITLE' to '$YEAR'/'$MONTH
 ## NOTE: this will fail if dir not pre-created
-scp -P 722 trimmed-$TITLE.m4a corshamb@aphrodite.krystal.co.uk:public_html/wp-content/uploads/sermons/$YEAR/$MONTH/$TITLE.m4a
+scp -P 722 $NORMAL_TITLE.m4a corshamb@aphrodite.krystal.co.uk:public_html/wp-content/uploads/sermons/$YEAR/$MONTH/
 
 # create a media post for the audio
 # this works but it skips the sermons folder from the path so we end up with
@@ -54,6 +62,6 @@ curl -u $WP_USR_PWD -X 'POST' \
   'https://corshambaptists.org/wp-json/wp/v2/wpfc_sermon/'$SERMON_ID \
   -H 'Accept: application/json' \
   -H 'Content-Type: application/x-www-form-urlencoded' \
-  -d 'sermon_date='`date +%s` \
-  -d 'sermon_audio=https%3A%2F%2Fcorshambaptists.org%2Fwp-content%2Fuploads%2Fsermons%2F'$YEAR'%2F'$MONTH'%2F'$TITLE'.m4a'
+  -d 'sermon_date='`date --date=$SERMON_DATE +%s` \
+  -d 'sermon_audio=https%3A%2F%2Fcorshambaptists.org%2Fwp-content%2Fuploads%2Fsermons%2F'$YEAR'%2F'$MONTH'%2F'$NORMAL_TITLE'.m4a'
 
