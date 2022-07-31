@@ -1,5 +1,8 @@
 *.mp3
 *.m4a
+*.m4a.part
+*.m4a.ytdl
 *.swp
 env.sh
+post-sermon-failure.txt
 wp-creds
