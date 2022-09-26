@@ -35,7 +35,7 @@ SERMON_DATE=`date -d @$SERMON_DATE +"%Y-%m-%d"`
 YEAR=${SERMON_DATE:0:4}
 MONTH=${SERMON_DATE:5:2}
 DATE=${SERMON_DATE:8:2}
-NORMAL_TITLE=$YEAR_$MONTH_$DATE_$TITLE
+NORMAL_TITLE=$YEAR'_'$MONTH'_'$DATE'_'$TITLE
 
 # get the audio component of the live stream
 youtube-dl -x --add-metadata -o $TITLE'.%(ext)s' $YT_URL
