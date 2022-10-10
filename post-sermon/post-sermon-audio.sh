@@ -45,8 +45,9 @@ if [[ $TITLE == $YEAR-$MONTH-$DATE* ]]; then
     TITLE=tmp-$TITLE
 fi
 
-# trim silence from start (typically run a pre-live screen for a couple of minutes)
-ffmpeg -i $TITLE.m4a -af silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-70dB $NORMAL_TITLE.m4a
+# -af: trim silence from start (typically run a pre-live screen for a couple of minutes)
+# -ac 1: convert to single channel (mono) since both channels recorded are identical
+ffmpeg -i $TITLE.m4a -ac -af silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-70dB $NORMAL_TITLE.m4a
 
 # push the audio to the web server
 echo '  deploying '$NORMAL_TITLE' to '$YEAR'/'$MONTH
