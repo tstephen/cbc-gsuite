@@ -6,13 +6,12 @@
 3. Post the audio to WordPress media library
 4. Update the existing sermon entry in WordPress with audio
 
-## Fetch audio and metadata from YouTube
+## Tools needed
 
-[youtube-dl](https://github.com/ytdl-org/youtube-dl) is a cross-platform, command-line tool for fetching all manner of data from YouTube and other sharing sites. This will fetch audio only(so much smaller) and add meta-data such as the YouTube description and so forth as audio tags.
-
-```
-youtube-dl --add-metadata -x https://youtu.be/id
-```
+- Unix-like operating system (Linux, Mac, WSL on Windows)
+- curl
+- jq
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) 
 
 ## Interacting with WordPress via the API
 
@@ -20,7 +19,15 @@ For some time now, WordPress has had an API, which is obviously more suitable fo
 
 ### Environment variables
 
-It's worth noting that the REST API appears to be designed first and foremost for use within the web server so it hasn't (yet) prioritised authentication mechanisms now common for APIs (OAuth). So to slightly reduce the risk exposing my password I pass it into scripts as .n environment variable. A few other things are externalised this way too. Example (non-functional) values are included in `env.sample.sh`.
+It's worth noting that the REST API appears to be designed first and foremost for use within the web server so it hasn't (yet) prioritised authentication mechanisms now common for APIs (OAuth).
+So to slightly reduce the risk exposing my password I pass it into scripts as an environment variable.
+A few other things are externalised this way too.
+Example (non-functional) values are included in `env.example.sh`.
+
+Since Wordpress 5.6 Application Passwords are built in.
+This allows each user to have one or more passwords for use in scripts thus protecting their main password.
+To get one go to your profile page.
+More details can be found [here](https://make.wordpress.org/core/2020/11/05/application-passwords-integration-guide/).
 
 ## Create sermon via the command line
 
@@ -30,37 +37,29 @@ First you need to know the `post_type` of sermons. You can list those available 
 curl -u $WP_USR_PWD  https://corshambaptists.org/wp-json/wp/v2/types | jq
 ```
 
-Note that it seems possible to have custom post types that are not exposed over REST API. Check this stack overflow for how to resolve that: https://wordpress.stackexchange.com/questions/294085/wordpress-rest-create-post-of-custom-type
+Note that it seems possible to have custom post types that are not exposed over REST API.
+Check this stack overflow for how to resolve that: <https://wordpress.stackexchange.com/questions/294085/wordpress-rest-create-post-of-custom-type>
 
-The Sermon Manager for WordPress uses the type `wpfc_sermon` and here's an example of setting the necessary fields. Note that for many fields you need to look up their numeric id rather than using the human readable name, e.g. preacher is here 69 rather than 'Eddie'.
-
-```
-curl -u $WP_USR_PWD -X POST \
-  -d 'date='$YEAR'-'$MONTH'-'$DATE'T10:00:00' \
-  -d 'slug='$TITLE \
-  -d 'status=pending' \
-  -d 'wpfc_preacher='$PREACHER, \
-  -d 'wpfc_sermon_series='$SERIES, \
-  -d 'wpfc_sermon_topics=', \
-  -d 'wpfc_bible_book='$BIBLE_BOOK, \
-  -d 'wpfc_service_type='$SERVICE_TYPE, \
-  -d 'sermon_audio=https://corshambaptists.org/wp-content/uploads/sermons/'$YEAR'/'$MONTH'/'$DATE'/'$TITLE.mp3', \
-  -d 'bible_passage=Matthew 2:1-12', \
-  -d 'sermon_description=<p>In our third advent sermon at church on the green, we look at Herod and ask why God allowed him to act as he did.</p>', \
-  -d 'sermon_video_url='$YT_URL, \
-  -d 'sermon_bulletin=' \
-  -d 'sermon_date='$YEAR'-'$MONTH'-'$DATE'T10:00:00' \
-  -d 'title=Loving Kindness - Sunday Service (27 Dec 2020)' \
-  https://corshambaptists.org/wp-json/wp/v2/wpfc_sermon
-```
-
-This command will return the full sermon record. Note it will start with the id used to check the result below.
+The Sermon Manager for WordPress uses the type `wpfc_sermon` and there's an example of setting the necessary fields in `create-sermon.sh`.
+Note that for many fields you need to look up their numeric id rather than using the human readable name, e.g. preacher is here 69 rather than 'Eddie'.
+If all goes well `create-sermon.sh` writes the id of the created sermon to `sermon-id`.
 
 Check the result in all its detail:
 
 ```
 curl -u $WP_USR_PWD https://corshambaptists.org/wp-json/wp/v2/wpfc_sermon/11064
 ```
+
+## Fetch audio and metadata from YouTube
+
+[yt-dlp](https://github.com/ytdl-org/yt-dlp) is a cross-platform, command-line tool for fetching all manner of data from YouTube and other sharing sites. This will fetch audio only(so much smaller) and add meta-data such as the YouTube description and so forth as audio tags.
+
+```
+yt-dlp --add-metadata --extract-audio --audio-format mp3 https://youtu.be/id
+```
+
+At the current time, we post only sermon audio.
+Therefore is is necessary to open in Audacity and cut out the start and end of the service.
 
 ## Post audio file
 
@@ -91,3 +90,4 @@ curl -u $WP_USR_PWD -X 'POST' \
   -H 'Content-Type: application/x-www-form-urlencoded' \
   -d 'sermon_audio=https%3A%2F%2Fcorshambaptists.org%2Fwp-content%2Fuploads%2Fsermons%2F'$YEAR'%2F'$MONTH'%2F'$TITLE'.m4a'#
 ```
+

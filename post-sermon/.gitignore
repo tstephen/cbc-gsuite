@@ -2,7 +2,9 @@
 *.m4a
 *.m4a.part
 *.m4a.ytdl
+*.opus
 *.swp
 env.sh
 post-sermon-failure.txt
+sermon_id
 wp-creds
